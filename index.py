@@ -1,11 +1,14 @@
 from datetime import datetime, tzinfo
+from dotenv import load_dotenv
 from dateutil.relativedelta import relativedelta
-from git import Repo
+from git import Repo, Actor
 import util
 import random
+import os
 
 
 def mainProgram():
+    load_dotenv() # Load environment variables
     currentDateTime = util.stripMiliSec(datetime.now().astimezone())
     setOriginDateTime = currentDateTime - relativedelta(years = 1)
     tempDateTime = setOriginDateTime
@@ -14,6 +17,13 @@ def mainProgram():
     # now = util.stripMiliSec(now)
     repoPath = "./"
     repo = Repo(repoPath)
+    name = os.getenv("NAME")
+    email = os.getenv("EMAIL")
+    if not name or not email:
+        print("Environment variables NAME and EMAIL must be set.")
+        return
+    new_author = Actor(name, email)
+    new_committer = Actor(name, email)
     
     # print(now)
     while True:
@@ -23,7 +33,9 @@ def mainProgram():
             break
         writeToFile(tempDateTime, currentDateTime)
         repo.index.add(["log.txt"])
-        repo.index.commit(f"Update log.txt with date: {tempDateTime}", commit_date=tempDateTime)
+        # repo.index.commit(f"Update log.txt with date: {tempDateTime}", commit_date=tempDateTime)
+    repo.index.commit("Change author", author = new_author, committer=new_committer, commit_date=tempDateTime)
+    print(os.getenv("NAME"))
     # print(tempDateTime.strftime("%Y-%m-%d %H:%M:%S %z"))
     
         
